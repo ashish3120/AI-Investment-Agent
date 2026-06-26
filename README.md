@@ -18,26 +18,26 @@ A production-grade, autonomous equity research AI agent that performs fundamenta
 
 ```mermaid
 graph TD
-    A[User Query] -->|GET /api/research| B(Entity Resolver)
-    B -->|Resolves Ticker & Sector| C(Research Planner)
-    C -->|Builds Objective Queue| D(Guided ReAct Agent)
-    D -->|Polls Next Objective| E{Tool Router}
+    UserQuery[User Query] --> EntityResolver[Entity Resolver]
+    EntityResolver --> Planner[Research Planner]
+    Planner --> Agent[Guided ReAct Agent]
     
-    E -->|Market Data| F[Finnhub API]
-    E -->|XBRL Metrics| G[SEC EDGAR API]
-    E -->|Peer Rank| H[Groq LLM]
+    Agent --> Router{Tool Router}
     
-    F --> I[(Short-Term Memory)]
-    G --> I
-    H --> I
+    Router --> Finnhub[Finnhub API]
+    Router --> Edgar[SEC EDGAR API]
+    Router --> Groq[Groq LLM]
     
-    I -->|All Data Collected| J(Sector-Aware Scorer)
-    J -->|Calculates Metrics| K(Final Report Generator)
+    Finnhub --> Memory[(Memory)]
+    Edgar --> Memory
+    Groq --> Memory
     
-    K -->|SSE Stream| L[React/Vite Frontend]
-    K -->|Background Task| M[Gemini TTS Audio]
-    M -->|Caches WAV| N[(Redis Cache)]
-    N -->|tts_ready SSE Event| L
+    Memory --> Scorer[Sector-Aware Scorer]
+    Scorer --> Report[Final Report]
+    
+    Report --> Frontend[React Frontend]
+    Report --> TTS[Gemini TTS]
+    TTS --> Redis[(Redis Cache)]
 ```
 
 1. **Frontend (React/Vite):** A stunning, responsive UI built with Tailwind CSS. It communicates with the backend via Server-Sent Events (SSE) to render the agent's real-time "Thought -> Action -> Observation" trace, and provides custom audio controls for the synthesized executive report.
