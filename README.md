@@ -16,6 +16,30 @@ A production-grade, autonomous equity research AI agent that performs fundamenta
 
 ## 🏗️ Architecture
 
+```mermaid
+graph TD
+    A[User Query] -->|GET /api/research| B(Entity Resolver)
+    B -->|Resolves Ticker & Sector| C(Research Planner)
+    C -->|Builds Objective Queue| D(Guided ReAct Agent)
+    D -->|Polls Next Objective| E{Tool Router}
+    
+    E -->|Market Data| F[Finnhub API]
+    E -->|XBRL Metrics| G[SEC EDGAR API]
+    E -->|Peer Rank| H[Groq LLM]
+    
+    F --> I[(Short-Term Memory)]
+    G --> I
+    H --> I
+    
+    I -->|All Data Collected| J(Sector-Aware Scorer)
+    J -->|Calculates Metrics| K(Final Report Generator)
+    
+    K -->|SSE Stream| L[React/Vite Frontend]
+    K -->|Background Task| M[Gemini TTS Audio]
+    M -->|Caches WAV| N[(Redis Cache)]
+    N -->|tts_ready SSE Event| L
+```
+
 1. **Frontend (React/Vite):** A stunning, responsive UI built with Tailwind CSS. It communicates with the backend via Server-Sent Events (SSE) to render the agent's real-time "Thought -> Action -> Observation" trace, and provides custom audio controls for the synthesized executive report.
 2. **Backend (Node.js/Express):** Handles SSE streaming, orchestrates the Guided ReAct agent, manages short-term memory, and serves cached audio.
 3. **Cache (Redis):** Stores generated `.wav` files indexed by `sessionId` for rapid frontend retrieval.
