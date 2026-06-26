@@ -12,6 +12,14 @@ const THRESHOLDS = {
   nim:                { excellent: 0.04, good: 0.03, avg: 0.02, poor: 0.01, invert: false },
   loan_growth:        { excellent: 0.15, good: 0.08, avg: 0.04, poor: 0.00, invert: false },
   tier_1_capital:     { excellent: 0.13, good: 0.10, avg: 0.08, poor: 0.06, invert: false },
+  ffo:                { excellent: 0.15, good: 0.08, avg: 0.03, poor: 0.00, invert: false }, // Using growth logic
+  affo:               { excellent: 0.15, good: 0.08, avg: 0.03, poor: 0.00, invert: false },
+  occupancy:          { excellent: 0.95, good: 0.90, avg: 0.85, poor: 0.80, invert: false },
+  adr:                { excellent: 200,  good: 150,  avg: 100,  poor: 80,   invert: false }, // Raw absolute mapping
+  revpar:             { excellent: 150,  good: 100,  avg: 75,   poor: 50,   invert: false },
+  same_store_noi:     { excellent: 0.06, good: 0.03, avg: 0.01, poor:-0.02, invert: false },
+  leasing_spread:     { excellent: 0.15, good: 0.08, avg: 0.02, poor:-0.05, invert: false },
+  dividend_coverage:  { excellent: 1.50, good: 1.20, avg: 1.00, poor: 0.80, invert: false },
 };
 
 export function normalize(metric, value) {

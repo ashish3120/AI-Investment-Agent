@@ -7,6 +7,7 @@ import { SectorAwareScorer } from "./scorer/scorer.js";
 import { ShortTermMemory } from "./agent/memory.js";
 import redis from "./redisClient.js";
 import { GoogleGenAI } from "@google/genai";
+import Groq from "groq-sdk";
 
 const app = express();
 app.use(cors());
@@ -38,6 +39,23 @@ app.get("/api/research", async (req, res) => {
     const profileData = await profileRes.json();
     if (profileData && profileData.finnhubIndustry) {
       sector = profileData.finnhubIndustry;
+    }
+
+    if (sector === "Real Estate" || sector === "Equity Real Estate Investment Trusts (REITs)") {
+      try {
+        const groqClient = new Groq({ apiKey: process.env.GROQ_API_KEY });
+        const classification = await groqClient.chat.completions.create({
+          model: "llama-3.3-70b-versatile",
+          temperature: 0,
+          messages: [{ role: "user", content: `You are an expert financial classifier. Classify the REIT sub-industry for ${companyName} (${resolvedTicker}). Return STRICTLY ONE of the following exactly as written: Hotel REIT, Retail REIT, Industrial REIT, Infrastructure REIT, Office REIT, Residential REIT, or Generic REIT. Do not return any other text.` }]
+        });
+        const sub = classification.choices[0].message.content.trim();
+        if (sub.includes("REIT")) {
+          sector = sub;
+        }
+      } catch (err) {
+        console.error("Failed to classify REIT sub-industry:", err.message);
+      }
     }
   } catch (err) {
     console.error("Finnhub initial lookup failed:", err.message);
@@ -131,5 +149,3 @@ app.get("/api/tts/:sessionId", async (req, res) => {
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
-// Trigger restart
-

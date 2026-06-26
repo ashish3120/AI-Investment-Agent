@@ -5,10 +5,6 @@ Available Tools:
 
 2. edgar_financials      — Input: {"ticker":"AAPL","metric":"<metric>"}
    Returns: last 8 quarters of the requested fundamental.
-   CRITICAL - Use ONLY these exact metrics based on the sector:
-   - Technology / Consumer: revenue_growth, gross_margin, fcf, roe_roic
-   - Healthcare: revenue_growth, operating_margin, eps, medical_cost_ratio, fcf, roe_roic
-   - Financials / Banks: nim, loan_growth, tier_1_capital, roe_roic
 
 3. advanced_peer_comparison — Input: {"ticker":"AAPL","sector":"Technology"}
    Returns: top 3 peers via LLM, financial comparisons, and computed peer rank

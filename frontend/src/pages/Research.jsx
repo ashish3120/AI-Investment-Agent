@@ -171,18 +171,14 @@ export default function Research() {
               </div>
             )}
 
-            {/* 4. Agent trace — collapsed by default */}
-            <div className="animate-slide-up" style={{ animationDelay: "200ms" }}>
-              <ThinkingStream events={state.events} />
-            </div>
           </div>
 
           {/* Right Column */}
           <div className="lg:col-span-5 space-y-4">
             {/* 3. Agent Reasoning */}
             {state.final_reasoning && (
-              <div className="animate-slide-up h-full" style={{ animationDelay: "100ms" }}>
-                <div className="glass-card p-6 border-indigo-500/20 shadow-lg shadow-indigo-500/5 h-full">
+              <div className="animate-slide-up" style={{ animationDelay: "100ms" }}>
+                <div className="glass-card p-6 border-indigo-500/20 shadow-lg shadow-indigo-500/5">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <svg className="w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -227,6 +223,11 @@ export default function Research() {
                 </div>
               </div>
             )}
+
+            {/* 4. Agent trace — collapsed by default */}
+            <div className="animate-slide-up" style={{ animationDelay: "200ms" }}>
+              <ThinkingStream events={state.events} />
+            </div>
           </div>
         </div>
       </div>

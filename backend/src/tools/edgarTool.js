@@ -31,6 +31,15 @@ const METRIC_MAP = {
   nim:                "NetInterestIncome",
   loan_growth:        "LoansAndLeasesReceivableNetOfDeferredIncome",
   tier_1_capital:     "Tier1Capital",
+  // Real Estate / REITs
+  ffo:                "FundsFromOperationsREIT",
+  affo:               "AdjustedFundsFromOperationsREIT",
+  occupancy:          "AreaOfRealEstatePropertyOccupancyPercentage",
+  adr:                "AverageDailyRate",
+  revpar:             "RevenuePerAvailableRoom",
+  same_store_noi:     "SameStoreNetOperatingIncome",
+  leasing_spread:     "LeasingSpread",
+  dividend_coverage:  "DividendsCash",
 };
 
 export async function extractMetric(ticker, metric) {

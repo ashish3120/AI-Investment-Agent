@@ -55,6 +55,9 @@ export class SectorAwareScorer {
         switch (content.metric) {
           case "revenue_growth":
           case "loan_growth":
+          case "ffo":
+          case "affo":
+          case "same_store_noi":
             if (vals.length >= 5) metrics[content.metric] = (vals[0] - vals[4]) / Math.abs(vals[4]);
             else if (vals.length >= 2) metrics[content.metric] = (vals[0] - vals[1]) / Math.abs(vals[1]);
             break;
@@ -72,6 +75,13 @@ export class SectorAwareScorer {
           case "nim":
           case "tier_1_capital":
             if (vals.length >= 1) metrics[content.metric] = vals[0] / 1e9; // Basic absolute/ratio usage
+            break;
+          case "occupancy":
+          case "adr":
+          case "revpar":
+          case "leasing_spread":
+          case "dividend_coverage":
+            if (vals.length >= 1) metrics[content.metric] = vals[0];
             break;
           case "fcf":
             if (vals.length >= 1) metrics.fcf = vals[0] / 1e9;
