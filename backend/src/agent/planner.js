@@ -37,13 +37,24 @@ export class ResearchPlanner {
     });
   }
 
-  updateObjective(toolName, metricName = null, success = true) {
+  updateObjective(toolName, metricName, observation) {
+    const isSuccess = !observation.error;
+
     for (const obj of this.objectives) {
       if (obj.tool === toolName && obj.status === "pending") {
         if (toolName === "edgar_financials" && obj.metric !== metricName) {
           continue;
         }
-        obj.status = success ? "completed" : "failed";
+        obj.status = isSuccess ? "completed" : "failed";
+        
+        // Circuit Breaker: If EDGAR fails with CIK not found, skip all remaining EDGAR tasks
+        if (!isSuccess && toolName === "edgar_financials" && observation.error?.message?.includes("CIK not found")) {
+           this.objectives.forEach(o => {
+             if (o.tool === "edgar_financials" && o.status === "pending") {
+               o.status = "failed"; // Skip gracefully
+             }
+           });
+        }
         return;
       }
     }

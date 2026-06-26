@@ -80,8 +80,7 @@ export class GuidedReActAgent {
       }
 
       // Update planner based on outcome
-      const isSuccess = !observation.error;
-      planner.updateObjective(parsed.action, parsed.actionInput.metric, isSuccess);
+      planner.updateObjective(parsed.action, parsed.actionInput.metric, observation);
 
       await this.memory.append("thought", parsed.thought);
       await this.memory.append("action", parsed.action, { toolInput: parsed.actionInput });
