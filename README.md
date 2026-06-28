@@ -362,13 +362,11 @@ Now open `backend/.env` and fill in your API keys. The file has comments explain
 ```env
 # ── Groq (LLM Reasoning) ─────────────────────────────────────────
 GROQ_API_KEY=your_groq_api_key_here
-asistant_api_groq=your_groq_api_key_here   # Can be the same key
 
 # ── Finnhub (Market Data) ────────────────────────────────────────
 FINNHUB_API_KEY=your_finnhub_api_key_here
 
 # ── Google Gemini ─────────────────────────────────────────────────
-gemini_api_key=your_gemini_api_key_here
 gemini-3.1-flash-live-preview_api=your_gemini_api_key_here
 
 # ── SEC EDGAR ─────────────────────────────────────────────────────
@@ -378,7 +376,7 @@ SEC_USER_AGENT=YourName your@email.com
 REDIS_URL=redis://localhost:6379
 ```
 
-> **Note:** You can use the same Groq API key for both `GROQ_API_KEY` and `asistant_api_groq`. Same for both Gemini keys.
+
 
 <a name="install-redis"></a>
 **4. Install & Start Redis**

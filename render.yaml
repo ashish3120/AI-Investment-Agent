@@ -15,11 +15,7 @@ services:
         value: production
       - key: GROQ_API_KEY
         sync: false  # Set manually in Render dashboard
-      - key: asistant_api_groq
-        sync: false
       - key: FINNHUB_API_KEY
-        sync: false
-      - key: gemini_api_key
         sync: false
       - key: gemini-3.1-flash-live-preview_api
         sync: false

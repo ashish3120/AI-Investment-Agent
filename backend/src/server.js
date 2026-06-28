@@ -156,7 +156,7 @@ app.get("/api/research", async (req, res) => {
 
     // Proactively generate and cache TTS
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.gemini_api_key });
+      const ai = new GoogleGenAI({ apiKey: process.env["gemini-3.1-flash-live-preview_api"] });
       const ttsResponse = await ai.models.generateContent({
         model: 'gemini-2.5-flash-preview-tts',
         contents: 'Speak this exact text: ' + finalReasoning,
@@ -247,7 +247,7 @@ If data is unavailable, say so.`;
       { role: "user", content: message }
     ];
 
-    const groqClient = new Groq({ apiKey: process.env.asistant_api_groq });
+    const groqClient = new Groq({ apiKey: process.env.GROQ_API_KEY });
     const stream = await groqClient.chat.completions.create({
       model: "llama-3.1-8b-instant",
       messages,
