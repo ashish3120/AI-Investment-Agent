@@ -19,6 +19,15 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Health check route for the root path
+app.get("/", (req, res) => {
+  res.status(200).json({
+    status: "online",
+    message: "AI Investment Agent API is running!",
+    docs: "See frontend application to interact with this API."
+  });
+});
+
 app.get("/api/research", async (req, res) => {
   const { ticker: rawTicker, query = "Full fundamental analysis" } = req.query;
   if (!rawTicker) return res.status(400).json({ error: "ticker is required" });
