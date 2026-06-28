@@ -14,7 +14,14 @@ import { attachGeminiLive } from "./geminiLive.js";
 
 const app = express();
 app.use(cors({
-  origin: process.env.FRONTEND_URL || true, // Set FRONTEND_URL on Render to your Vercel domain
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (process.env.FRONTEND_URL && origin.includes(process.env.FRONTEND_URL.replace(/^https?:\/\//, ''))) {
+      return callback(null, true);
+    }
+    // Fallback for local development
+    return callback(null, true);
+  },
   credentials: true
 }));
 app.use(express.json());
@@ -113,9 +120,17 @@ app.get("/api/research", async (req, res) => {
   }
 
   const sessionId = uuidv4();
-  const agent = new GuidedReActAgent(sessionId);
-  const scorer = new SectorAwareScorer();
   const emit = (data) => res.write(`data: ${JSON.stringify(data)}\n\n`);
+
+  let agent, scorer;
+  try {
+    agent = new GuidedReActAgent(sessionId);
+    scorer = new SectorAwareScorer();
+  } catch (error) {
+    emit({ type: "error", message: `Agent initialization failed: ${error.message}. Please check if all API keys (Groq, Finnhub, etc.) are set correctly on your deployment server.` });
+    res.end();
+    return;
+  }
 
   try {
     for await (const event of agent.run(resolvedTicker, companyName, sector, query)) {
