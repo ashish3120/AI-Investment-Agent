@@ -1,10 +1,12 @@
 import { useEffect, useReducer, useState, useRef } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { streamResearch } from "../lib/sseClient";
+import { API_BASE } from "../lib/config";
 import VerdictCard from "../components/VerdictCard";
 import ScoreBreakdown from "../components/ScoreBreakdown";
 import CompanyNews from "../components/CompanyNews";
 import ThinkingStream from "../components/ThinkingStream";
+import ChatAssistant from "../components/ChatAssistant";
 
 function reducer(state, action) {
   switch (action.type) {
@@ -15,6 +17,7 @@ function reducer(state, action) {
     case "SET_ERROR":  return { ...state, error: action.payload, done: true };
     case "SET_FINAL_REASONING": return { ...state, final_reasoning: action.payload, sessionId: action.sessionId, ttsReady: false };
     case "SET_TTS_READY": return { ...state, ttsReady: true };
+    case "SET_COMPANY_INFO": return { ...state, companyName: action.companyName, resolvedTicker: action.resolvedTicker };
     default:           return state;
   }
 }
@@ -26,7 +29,7 @@ export default function Research() {
   const query = searchParams.get("q") ?? "Full fundamental analysis";
 
   const [state, dispatch] = useReducer(reducer, {
-    events: [], score: null, done: false, sector: null, error: null, final_reasoning: null, sessionId: null, ttsReady: false
+    events: [], score: null, done: false, sector: null, error: null, final_reasoning: null, sessionId: null, ttsReady: false, companyName: null, resolvedTicker: null
   });
 
   const [isPlaying, setIsPlaying] = useState(false);
@@ -49,7 +52,7 @@ export default function Research() {
     try {
       setIsPlaying(true);
       if (!state.sessionId) throw new Error("No session ID found for TTS");
-      const res = await fetch(`http://localhost:8000/api/tts/${state.sessionId}`);
+      const res = await fetch(`${API_BASE}/api/tts/${state.sessionId}`);
       if (!res.ok) throw new Error("Failed to fetch audio");
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
@@ -76,6 +79,8 @@ export default function Research() {
         dispatch({ type: "SET_FINAL_REASONING", payload: event.content, sessionId: event.sessionId });
       } else if (event.type === "tts_ready") {
         dispatch({ type: "SET_TTS_READY" });
+      } else if (event.type === "research_complete") {
+        dispatch({ type: "SET_COMPANY_INFO", companyName: event.data?.company, resolvedTicker: event.data?.ticker });
       } else if (event.type === "error") {
         dispatch({ type: "SET_ERROR", payload: event.message });
       } else {
@@ -93,7 +98,7 @@ export default function Research() {
       {/* Ambient backgrounds */}
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12 relative z-10">
+      <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12 pb-32 relative z-10">
         {/* Back button */}
         <button
           id="back-button"
@@ -109,7 +114,13 @@ export default function Research() {
         {/* Header */}
         <div className="flex items-center gap-3 mb-8 animate-fade-in">
           <div className="flex items-center gap-3">
-            <span className="font-mono text-2xl font-semibold text-white tracking-wide">{ticker}</span>
+            <span className="font-mono text-2xl font-semibold text-white tracking-wide">{state.companyName || ticker}</span>
+            {state.resolvedTicker && state.resolvedTicker !== (state.companyName || ticker) && (
+              <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full
+                             bg-slate-700/50 text-slate-400 border border-slate-600/30 font-mono">
+                {state.resolvedTicker}
+              </span>
+            )}
             {state.sector && (
               <span className="text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full
                              bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-medium">
@@ -161,7 +172,7 @@ export default function Research() {
           {/* Left Column */}
           <div className="lg:col-span-7 space-y-4">
             {/* 1. Verdict card — the hero */}
-            <VerdictCard score={state.score} loading={!state.score} />
+            {!state.error && <VerdictCard score={state.score} loading={!state.score} />}
 
             {/* 2. Score breakdown bars */}
             {state.score && (
@@ -186,36 +197,6 @@ export default function Research() {
                       </svg>
                       <h3 className="text-sm font-semibold text-white uppercase tracking-widest">Agent Reasoning</h3>
                     </div>
-                    <button
-                      onClick={handlePlayAudio}
-                      disabled={!state.ttsReady}
-                      className="p-1.5 rounded-full bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 transition-colors disabled:opacity-50 flex items-center gap-2 px-3 text-xs"
-                      title={!state.ttsReady ? "Preparing audio..." : isPlaying ? "Pause analysis" : "Listen to analysis"}
-                    >
-                      {!state.ttsReady ? (
-                        <>
-                          <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                          </svg>
-                          Preparing audio...
-                        </>
-                      ) : isPlaying ? (
-                        <>
-                          <svg className="w-4 h-4 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                          </svg>
-                          Pause
-                        </>
-                      ) : (
-                        <>
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          Listen to Analysis
-                        </>
-                      )}
-                    </button>
                   </div>
                   <div className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed">
                     {state.final_reasoning}
@@ -225,12 +206,21 @@ export default function Research() {
             )}
 
             {/* 4. Agent trace — collapsed by default */}
-            <div className="animate-slide-up" style={{ animationDelay: "200ms" }}>
-              <ThinkingStream events={state.events} />
-            </div>
+            {!state.error && (
+              <div className="animate-slide-up" style={{ animationDelay: "200ms" }}>
+                <ThinkingStream events={state.events} />
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Floating Context-aware Chat Assistant */}
+      {state.sessionId && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-3xl z-50 px-4 animate-slide-up" style={{ animationDelay: "150ms" }}>
+          <ChatAssistant sessionId={state.sessionId} />
+        </div>
+      )}
     </main>
   );
 }

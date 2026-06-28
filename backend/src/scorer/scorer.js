@@ -40,6 +40,7 @@ export class SectorAwareScorer {
       breakdown,
       marketCap: raw.marketCap,
       news: raw.news,
+      rawData: raw,
     };
   }
 
@@ -105,6 +106,11 @@ export class SectorAwareScorer {
         }
         if (content.news) {
           metrics.news = content.news;
+        }
+        // Extract all additional finnhub metrics
+        const finnhubKeys = ['currentPrice', 'volume', 'high52w', 'low52w', 'beta', 'peRatio', 'psRatio', 'pbRatio', 'dividendYield'];
+        for (const k of finnhubKeys) {
+          if (content[k] !== undefined) metrics[k] = content[k];
         }
       }
     }

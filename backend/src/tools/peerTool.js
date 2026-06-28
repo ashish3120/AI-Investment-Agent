@@ -61,10 +61,10 @@ export async function getAdvancedPeerComparison(ticker, sector) {
 
     // 3. Calculate rank (0.0 to 1.0) based on Revenue Growth compared to peers
     let rank = 0.5; // Default average
+    let validPeers = 0;
     const targetRev = results[ticker]?.revenueGrowth;
     if (targetRev !== null && targetRev !== undefined) {
       let betterThanCount = 0;
-      let validPeers = 0;
       for (const p of peers) {
         const peerRev = results[p]?.revenueGrowth;
         if (peerRev !== null && peerRev !== undefined) {

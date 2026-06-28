@@ -1,0 +1,38 @@
+# render.yaml — Render Blueprint for AI Investment Agent Backend
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: ai-investment-agent-api
+    runtime: node
+    region: oregon
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node src/server.js
+    plan: free  # Change to "starter" ($7/mo) for no cold starts
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: GROQ_API_KEY
+        sync: false  # Set manually in Render dashboard
+      - key: asistant_api_groq
+        sync: false
+      - key: FINNHUB_API_KEY
+        sync: false
+      - key: gemini_api_key
+        sync: false
+      - key: gemini-3.1-flash-live-preview_api
+        sync: false
+      - key: SEC_USER_AGENT
+        sync: false
+      - key: REDIS_URL
+        fromService:
+          name: ai-investment-agent-redis
+          type: redis
+          property: connectionString
+
+  - type: redis
+    name: ai-investment-agent-redis
+    plan: free  # 25MB free tier
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []  # Only accessible from Render services

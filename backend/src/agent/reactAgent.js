@@ -24,8 +24,8 @@ export class GuidedReActAgent {
       let history = await this.memory.getLog();
 
       // CRITICAL FIX: Only pass the most recent history turns to save tokens
-      if (Array.isArray(history) && history.length > 6) {
-        history = history.slice(-6); // Keeps only the last 3 turns (Thought + Observation pairs)
+      if (Array.isArray(history) && history.length > 2) {
+        history = history.slice(-2); // Keeps only the absolute last Action/Observation pair
       }
 
       const planStatus = planner.getPlanStatus();
@@ -35,7 +35,7 @@ export class GuidedReActAgent {
       const prompt = buildReActPrompt(ticker, companyName, query, history, planStatus, currentObjective);
 
       const response = await this.client.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
+        model: "llama-3.1-8b-instant",
         temperature: 0.1,
         max_tokens: 1024,
         stop: ["Observation:"],
@@ -68,9 +68,13 @@ export class GuidedReActAgent {
 
       let observation;
       try {
+        // Override ticker in the action input to prevent LLM from using wrong ticker
+        if (parsed.actionInput.ticker) {
+          parsed.actionInput.ticker = ticker;
+        }
         observation = await this.router.call(parsed.action, parsed.actionInput);
       } catch (err) {
-        observation = { 
+        observation = {
           error: {
             type: "SYSTEM_ERROR",
             message: err.message,

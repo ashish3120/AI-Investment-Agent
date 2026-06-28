@@ -17,6 +17,7 @@ Rules:
 - Call edgar_financials once per metric only.
 - NEVER repeat the same tool+input combination.
 - Call FINISH after gathering data to provide a comprehensive analysis report.
+- If you recognize the company but know it is completely PRIVATE and has never launched an IPO, you MUST set the ticker field value to "PRIVATE_MARKET" in your tool calls.
 `.trim();
 
 export function buildSystemPrompt() {
@@ -42,11 +43,17 @@ STOP after Action Input. Never write Observation: yourself.`;
 export function buildReActPrompt(ticker, companyName, query, history, planStatus, currentObjective) {
   const log = history
     .filter(e => e.type !== "init")
-    .map(e => `${e.type.toUpperCase()}: ${
-      typeof e.content === "object"
-        ? JSON.stringify(e.content).slice(0, 300)
-        : e.content
-    }`).join("\n");
+    .map(e => {
+      let contentString = e.content;
+      if (typeof e.content === "object") {
+        if (e.content.error) {
+          contentString = `ERROR: ${e.content.error.message}`;
+        } else {
+          contentString = `[Data successfully retrieved]`;
+        }
+      }
+      return `${e.type.toUpperCase()}: ${contentString}`;
+    }).join("\n");
 
   return `Research Target
 Ticker: ${ticker}
@@ -60,9 +67,8 @@ You MUST execute the action for: [${currentObjective.id}] ${currentObjective.nam
 Tool to use: ${currentObjective.tool}
 ${currentObjective.metric ? `Metric to fetch: ${currentObjective.metric}` : ""}
 
-Use the ticker for every tool call.
-Never substitute the company name.
-Never invent new identifiers.
+CRITICAL: Always use ticker "${ticker}" in every tool call. Do not modify or substitute this ticker.
+Never use the company name as a ticker.
 
 User Query: ${query}
 
