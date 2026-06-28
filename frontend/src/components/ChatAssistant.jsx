@@ -170,6 +170,7 @@ export default function ChatAssistant({ sessionId }) {
 
     if (!playbackContextRef.current) {
       playbackContextRef.current = new AudioContext({ sampleRate: 24000 });
+      playbackContextRef.current.nextStartTime = 0;
     }
     const ctx = playbackContextRef.current;
 
@@ -184,11 +185,22 @@ export default function ChatAssistant({ sessionId }) {
     const source = ctx.createBufferSource();
     source.buffer = audioBuffer;
     source.connect(ctx.destination);
-    source.onended = () => {
-      isPlayingRef.current = false;
-      playNextAudio(); // play next chunk
-    };
-    source.start();
+
+    // Schedule audio exactly at the end of the previous chunk to eliminate cracking
+    if (ctx.nextStartTime < ctx.currentTime) {
+      ctx.nextStartTime = ctx.currentTime;
+    }
+    
+    source.start(ctx.nextStartTime);
+    ctx.nextStartTime += audioBuffer.duration;
+
+    // Mark as not playing so we can immediately process the next chunk in the queue
+    isPlayingRef.current = false;
+    
+    // If there is more audio already buffered, schedule it immediately
+    if (pendingAudioRef.current.length > 0) {
+      playNextAudio();
+    }
   }, []);
 
   // Text submission — always uses REST endpoint
