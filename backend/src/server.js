@@ -178,41 +178,6 @@ app.get("/api/research", async (req, res) => {
     emit({ type: "final_reasoning", content: finalReasoning, sessionId });
     emit({ type: "research_complete", data: finalPayload });
 
-    // Proactively generate and cache TTS
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env["gemini-3.1-flash-live-preview_api"] });
-      const ttsResponse = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-preview-tts',
-        contents: 'Speak this exact text: ' + finalReasoning,
-        config: {
-          responseModalities: ['AUDIO'],
-          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Aoede' } } }
-        }
-      });
-      const base64Pcm = ttsResponse.candidates[0].content.parts[0].inlineData.data;
-      const pcmBuffer = Buffer.from(base64Pcm, 'base64');
-      const wavHeader = Buffer.alloc(44);
-      wavHeader.write('RIFF', 0);
-      wavHeader.writeUInt32LE(36 + pcmBuffer.length, 4);
-      wavHeader.write('WAVE', 8);
-      wavHeader.write('fmt ', 12);
-      wavHeader.writeUInt32LE(16, 16);
-      wavHeader.writeUInt16LE(1, 20);
-      wavHeader.writeUInt16LE(1, 22);
-      wavHeader.writeUInt32LE(24000, 24);
-      wavHeader.writeUInt32LE(24000 * 2, 28);
-      wavHeader.writeUInt16LE(2, 32);
-      wavHeader.writeUInt16LE(16, 34);
-      wavHeader.write('data', 36);
-      wavHeader.writeUInt32LE(pcmBuffer.length, 40);
-      const wavBuffer = Buffer.concat([wavHeader, pcmBuffer]);
-
-      await redis.set(`tts:${sessionId}`, wavBuffer, "EX", 3600);
-      emit({ type: "tts_ready", sessionId });
-    } catch (ttsErr) {
-      console.error("Proactive TTS generation failed:", ttsErr.message);
-    }
-
     emit({ type: "done" });
   } catch (err) {
     console.error("Research error:", err);
@@ -223,19 +188,6 @@ app.get("/api/research", async (req, res) => {
 });
 
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
-
-app.get("/api/tts/:sessionId", async (req, res) => {
-  try {
-    const wavBuffer = await redis.getBuffer(`tts:${req.params.sessionId}`);
-    if (!wavBuffer) return res.status(404).json({ error: "Audio not found or expired" });
-
-    res.setHeader('Content-Type', 'audio/wav');
-    res.send(wavBuffer);
-  } catch (error) {
-    console.error("TTS fetch error:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
 
 app.post("/api/chat", async (req, res) => {
   const { sessionId, message, history = [] } = req.body;

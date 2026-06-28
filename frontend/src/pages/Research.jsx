@@ -15,8 +15,7 @@ function reducer(state, action) {
     case "SET_DONE":   return { ...state, done: true };
     case "SET_SECTOR": return { ...state, sector: action.payload };
     case "SET_ERROR":  return { ...state, error: action.payload, done: true };
-    case "SET_FINAL_REASONING": return { ...state, final_reasoning: action.payload, sessionId: action.sessionId, ttsReady: false };
-    case "SET_TTS_READY": return { ...state, ttsReady: true };
+    case "SET_FINAL_REASONING": return { ...state, final_reasoning: action.payload, sessionId: action.sessionId };
     case "SET_COMPANY_INFO": return { ...state, companyName: action.companyName, resolvedTicker: action.resolvedTicker };
     default:           return state;
   }
@@ -29,44 +28,8 @@ export default function Research() {
   const query = searchParams.get("q") ?? "Full fundamental analysis";
 
   const [state, dispatch] = useReducer(reducer, {
-    events: [], score: null, done: false, sector: null, error: null, final_reasoning: null, sessionId: null, ttsReady: false, companyName: null, resolvedTicker: null
+    events: [], score: null, done: false, sector: null, error: null, final_reasoning: null, sessionId: null, companyName: null, resolvedTicker: null
   });
-
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [audioURL, setAudioURL] = useState(null);
-  const audioRef = useRef(null);
-
-  const handlePlayAudio = async () => {
-    if (isPlaying && audioRef.current) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-      return;
-    }
-
-    if (audioRef.current) {
-      audioRef.current.play();
-      setIsPlaying(true);
-      return;
-    }
-    
-    try {
-      setIsPlaying(true);
-      if (!state.sessionId) throw new Error("No session ID found for TTS");
-      const res = await fetch(`${API_BASE}/api/tts/${state.sessionId}`);
-      if (!res.ok) throw new Error("Failed to fetch audio");
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      setAudioURL(url);
-      
-      const audio = new Audio(url);
-      audioRef.current = audio;
-      audio.onended = () => setIsPlaying(false);
-      audio.play();
-    } catch (err) {
-      console.error(err);
-      setIsPlaying(false);
-    }
-  };
 
   useEffect(() => {
     return streamResearch(ticker, query, (event) => {
@@ -77,8 +40,6 @@ export default function Research() {
         dispatch({ type: "SET_DONE" });
       } else if (event.type === "final_reasoning") {
         dispatch({ type: "SET_FINAL_REASONING", payload: event.content, sessionId: event.sessionId });
-      } else if (event.type === "tts_ready") {
-        dispatch({ type: "SET_TTS_READY" });
       } else if (event.type === "research_complete") {
         dispatch({ type: "SET_COMPANY_INFO", companyName: event.data?.company, resolvedTicker: event.data?.ticker });
       } else if (event.type === "error") {
