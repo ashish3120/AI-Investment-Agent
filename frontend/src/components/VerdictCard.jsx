@@ -1,10 +1,10 @@
 const GRADE_CONFIG = {
-  "A+": { color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", glow: "shadow-emerald-500/10", signal: "Strong Buy" },
-  "A":  { color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", glow: "shadow-emerald-500/10", signal: "Buy" },
-  "B+": { color: "text-amber-400",   bg: "bg-amber-500/10",   border: "border-amber-500/20",   glow: "shadow-amber-500/10",   signal: "Lean Buy" },
-  "B":  { color: "text-amber-400",   bg: "bg-amber-500/10",   border: "border-amber-500/20",   glow: "shadow-amber-500/10",   signal: "Hold" },
-  "C+": { color: "text-orange-400",  bg: "bg-orange-500/10",  border: "border-orange-500/20",  glow: "shadow-orange-500/10",  signal: "Watch" },
-  "C":  { color: "text-orange-400",  bg: "bg-orange-500/10",  border: "border-orange-500/20",  glow: "shadow-orange-500/10",  signal: "Caution" },
+  "A+": { color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", glow: "shadow-emerald-500/10", signal: "Invest" },
+  "A":  { color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", glow: "shadow-emerald-500/10", signal: "Invest" },
+  "B+": { color: "text-amber-400",   bg: "bg-amber-500/10",   border: "border-amber-500/20",   glow: "shadow-amber-500/10",   signal: "Invest" },
+  "B":  { color: "text-amber-400",   bg: "bg-amber-500/10",   border: "border-amber-500/20",   glow: "shadow-amber-500/10",   signal: "Invest" },
+  "C+": { color: "text-orange-400",  bg: "bg-orange-500/10",  border: "border-orange-500/20",  glow: "shadow-orange-500/10",  signal: "Pass" },
+  "C":  { color: "text-orange-400",  bg: "bg-orange-500/10",  border: "border-orange-500/20",  glow: "shadow-orange-500/10",  signal: "Pass" },
   "D":  { color: "text-red-400",     bg: "bg-red-500/10",     border: "border-red-500/20",     glow: "shadow-red-500/10",     signal: "Pass" },
 };
 

@@ -471,6 +471,41 @@ The composite score is calculated using a **sector-weighted normalization** appr
 
 ---
 
+---
+
+## 🛠️ Key Decisions & Trade-offs
+
+- **ReAct vs. Simple LLM Chain:** Chose a Guided ReAct agent instead of a single LLM prompt to allow the agent to decide which APIs to call based on the specific company (e.g., fetching REIT metrics vs Tech metrics). *Trade-off:* Higher latency and token usage, but much higher accuracy and depth.
+- **Direct SEC EDGAR vs. Paid APIs:** Chose to parse raw XBRL from SEC EDGAR for financial metrics instead of a paid aggregator to ensure the agent uses canonical primary sources. *Trade-off:* Required complex mapping and handling of missing data points.
+- **WebSocket for Voice vs REST:** Chose WebSockets for the Gemini Live voice integration to enable real-time bidirectional streaming, minimizing latency. *Trade-off:* More complex state management on the frontend and backend compared to simple REST polling.
+- **In-Memory Redis vs DB:** Chose Redis for session and audio caching for speed and simplicity. *Trade-off:* Data is ephemeral, meaning historical research sessions are lost on restart, which was deemed acceptable for a real-time agent.
+- **What I left out:** Persistent user accounts, portfolio tracking, and complex charting libraries were omitted to focus purely on the core AI reasoning and multimodal capabilities.
+
+---
+
+## 📊 Example Runs
+
+- **Google (GOOGL):** The agent accurately identified it as a Technology company, fetched revenue growth and margins, and scored it an 'A' with a strong composite score. The Gemini Live assistant could seamlessly discuss its advertising dominance vs cloud growth based on the reasoning context.
+- **Realty Income (O):** The agent recognized it as a Retail REIT and intelligently switched its evaluation metrics from standard P/E to FFO (Funds From Operations) and AFFO. It provided a detailed breakdown of its dividend sustainability.
+- **SpaceX:** The agent quickly identified it as a private company using its 3-layer ticker resolution system and gracefully halted the ReAct loop, notifying the user that private market data is unavailable.
+
+---
+
+## 🚀 What I Would Improve With More Time
+
+- **RAG over 10-K Filings:** Implement vector search over the full text of 10-K filings to allow the agent to read the "Management Discussion and Analysis" (MD&A) section for qualitative insights.
+- **Global Markets:** Add support for European and Asian markets, expanding beyond US equities.
+- **Portfolio Analysis:** Introduce portfolio-level analysis, allowing the agent to evaluate how a new stock fits into an existing basket of assets.
+- **Database Persistence:** Add a persistence layer (e.g., PostgreSQL) to save user research history, custom scoring weights, and voice chat transcripts.
+
+---
+
+## 💬 Bonus: LLM Chat Session Transcript
+
+> **Note for Evaluator:** The complete LLM chat session transcript/logs documenting the thought process and iterative development of this project with the AI assistant are included in the `LLM_TRANSCRIPT.txt` file provided within this ZIP archive.
+
+---
+
 ## 📜 License
 
 This project is for **educational and research purposes only**. It does not constitute financial advice. Always do your own due diligence before making investment decisions.
